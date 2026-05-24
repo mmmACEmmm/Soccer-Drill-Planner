@@ -2,15 +2,6 @@
 
 A browser-based soccer drill planner for building animated training diagrams.
 
-## Run
-
-Open `index.html` directly, or serve the folder locally:
-
-```bash
-python -m http.server 4177
-```
-
-Then visit `http://127.0.0.1:4177/index.html`.
 
 ## Features
 
