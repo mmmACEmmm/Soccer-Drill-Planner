@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Soccer Drill Planner</title>
+<link rel="icon" href="textures/Favicon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="ui">
+  <h2>Soccer Drill Planner</h2>
+
+  <div class="group-title">Drill Info</div>
+  <input type="text" id="drillTitleInput" placeholder="Drill title">
+  <textarea id="drillNotesInput" class="short-textarea" placeholder="Coaching points, constraints, or timing cues"></textarea>
+
+  <div class="group-title">Field</div>
+  <select id="mapType">
+    <option value="full">Full Field</option>
+    <option value="half">Half Field</option>
+    <option value="empty">Open Training Grid</option>
+  </select>
+  <select id="textureType">
+    <option value="grass">Deep Grass Texture</option>
+    <option value="white">Light Grass Texture</option>
+  </select>
+
+  <div class="group-title">View</div>
+  <div class="toggle-grid">
+    <label><input type="checkbox" id="gridToggle" checked> Grid</label>
+    <label><input type="checkbox" id="zonesToggle"> Zones</label>
+    <label><input type="checkbox" id="snapToggle"> Snap</label>
+    <label><input type="checkbox" id="labelsToggle" checked> Labels</label>
+  </div>
+  <div class="row">
+    <div>
+      <span class="mini-label">Snap size</span>
+      <input type="number" id="snapSizeInput" min="10" max="80" step="5" value="20">
+    </div>
+    <div>
+      <span class="mini-label">Play speed</span>
+      <input type="number" id="playbackSpeedInput" min="0.25" max="3" step="0.25" value="1">
+    </div>
+  </div>
+
+  <div class="group-title">Formation Presets</div>
+  <select id="formationPreset">
+    <option value="433">4-3-3 Wide</option>
+    <option value="4231">4-2-3-1</option>
+    <option value="352">3-5-2</option>
+    <option value="box">Midfield Box / 6s</option>
+  </select>
+  <div class="action-row">
+    <button onclick="loadPreset('red')" title="Place red team positions">
+      <svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 7h13l-2 4 2 4H4"/></svg>
+      Red shape
+    </button>
+    <button onclick="loadPreset('blue')" title="Place blue team positions">
+      <svg viewBox="0 0 24 24"><path d="M20 5v14"/><path d="M20 7H7l2 4-2 4h13"/></svg>
+      Blue shape
+    </button>
+  </div>
+
+  <div class="group-title">Game Starts & Drills</div>
+  <select id="scenarioPreset">
+    <option value="kickoff">Kickoff Pattern</option>
+    <option value="goalKick">Goal Kick Buildout</option>
+    <option value="corner">Corner Kick Routine</option>
+    <option value="throwIn">Throw-In Combination</option>
+    <option value="pressTrap">Pressing Trap</option>
+    <option value="rondo">4v2 Rondo</option>
+    <option value="overlap">Wide Overlap Pattern</option>
+    <option value="thirdMan">Third-Man Run</option>
+    <option value="counter">Counterattack 3v2</option>
+  </select>
+  <button onclick="loadScenario()" title="Load the selected game start or drill">
+    <svg viewBox="0 0 24 24"><path d="M5 4v16"/><path d="M5 6h12l-2 4 2 4H5"/></svg>
+    Load game start / drill
+  </button>
+
+  <div class="group-title">Tools</div>
+  <div class="tool-grid">
+    <button onclick="setTool('select')" id="selectBtn" class="active" title="Select and drag objects">
+      <svg viewBox="0 0 24 24"><path d="M4 4l7 16 2-7 7-2z"/></svg>
+      Select
+    </button>
+    <button onclick="setTool('arrow')" id="arrowBtn" title="Click the field to add movement points to the selected object">
+      <svg viewBox="0 0 24 24"><path d="M4 17c6-9 10-9 16-7"/><path d="M16 6l4 4-5 2"/></svg>
+      Route
+    </button>
+    <button onclick="setTool('red')" id="redBtn" title="Add a red player">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1.4-4 12.6-4 14 0"/></svg>
+      Red player
+    </button>
+    <button onclick="setTool('blue')" id="blueBtn" title="Add a blue player">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1.4-4 12.6-4 14 0"/></svg>
+      Blue player
+    </button>
+    <button onclick="setTool('ball')" id="ballBtn" title="Add a ball">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg>
+      Ball
+    </button>
+    <button onclick="setTool('cone')" id="coneBtn" title="Add a cone">
+      <svg viewBox="0 0 24 24"><path d="M12 4l7 16H5z"/><path d="M8 15h8"/></svg>
+      Cone
+    </button>
+    <button onclick="setTool('attach')" id="attachBtn" title="Click a ball, then click a player">
+      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg>
+      Attach
+    </button>
+    <button onclick="setTool('pass')" id="passBtn" title="Select the player with the ball, then click the receiving player">
+      <svg viewBox="0 0 24 24"><path d="M4 18c6-10 10-10 16-12"/><path d="M15 5h5v5"/></svg>
+      Pass
+    </button>
+    <button onclick="setTool('drop')" id="dropBtn" title="Add a route point where the selected player leaves the ball">
+      <svg viewBox="0 0 24 24"><path d="M12 3v11"/><path d="M8 10l4 4 4-4"/><path d="M5 21h14"/></svg>
+      Drop-off
+    </button>
+  </div>
+
+  <div class="group-title">Arrow Style</div>
+  <select id="routeStyle">
+    <option value="straight">Straight Run</option>
+    <option value="curve">Curved Run</option>
+    <option value="dashed">Dashed Run</option>
+    <option value="pass">Pass / Ball Flight</option>
+  </select>
+
+  <div id="selectedBox">
+    <div id="selectedName">No selection</div>
+    <div id="playerFields">
+      <span class="mini-label">Player name</span>
+      <input type="text" id="playerNameInput" placeholder="Name">
+      <div class="row">
+        <div>
+          <span class="mini-label">Number</span>
+          <input type="number" id="playerNumberInput" min="0" max="99" step="1" placeholder="10">
+        </div>
+        <div>
+          <span class="mini-label">Role</span>
+          <input type="text" id="playerRoleInput" placeholder="6, CB, ST">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <span class="mini-label">Delay (sec)</span>
+        <input type="number" id="delayInput" min="0" step="0.25" value="0">
+      </div>
+      <div>
+        <span class="mini-label">Speed</span>
+        <input type="number" id="speedInput" min="0.5" step="0.5" value="2">
+      </div>
+    </div>
+    <div class="action-row selected-actions">
+      <button onclick="duplicateSelected()">Duplicate</button>
+      <button onclick="deleteSelected()">Delete</button>
+      <button onclick="clearSelectedRoute()">Clear route</button>
+      <button onclick="removeLastRoutePoint()">Undo point</button>
+    </div>
+  </div>
+
+  <hr>
+  <div class="action-row">
+    <button onclick="undo()">Undo</button>
+    <button onclick="redo()">Redo</button>
+  </div>
+  <div class="action-row">
+    <button onclick="play()">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      Play
+    </button>
+    <button onclick="stop()">
+      <svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/></svg>
+      Reset
+    </button>
+  </div>
+  <label><input type="checkbox" id="loopBox"> Loop drill</label>
+
+  <hr>
+  <div class="action-row">
+    <button onclick="clearArrows()">Clear routes</button>
+    <button onclick="clearAll()">Clear all</button>
+    <button onclick="exportDrill()">Export</button>
+    <button onclick="importDrill()">Import</button>
+  </div>
+  <div class="action-row">
+    <button onclick="exportImage()">Save PNG</button>
+    <button onclick="copyShareCode()">Copy code</button>
+  </div>
+
+  <div class="group-title">Save Slots</div>
+  <div class="slot-grid">
+    <button onclick="saveSlot(1)">Save 1</button>
+    <button onclick="loadSlot(1)">Load 1</button>
+    <button onclick="saveSlot(2)">Save 2</button>
+    <button onclick="loadSlot(2)">Load 2</button>
+    <button onclick="saveSlot(3)">Save 3</button>
+    <button onclick="loadSlot(3)">Load 3</button>
+  </div>
+  <textarea id="dataBox" placeholder="Export/import data appears here"></textarea>
+  <div id="statusText" class="status-text"></div>
+
+  <p class="small">
+    Attach mode: click a ball, then a player. Pass mode: select the player with the ball,
+    then click the receiving player. Drop-off mode adds a route point where that player leaves the ball.
+  </p>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script src="app.js" defer></script>
+</body>
+</html>
+
